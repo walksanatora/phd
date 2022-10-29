@@ -1,4 +1,3 @@
-use phd;
 use std::process;
 
 const DEFAULT_BIND: &str = "[::]:7070";
@@ -10,7 +9,8 @@ fn main() {
     let mut args = args.iter();
     let mut root = ".";
     let mut addr = DEFAULT_BIND;
-    let mut host = DEFAULT_HOST;
+    let mut rhost = "0.0.0.0";
+    let mut lhost = DEFAULT_HOST;
     let mut port = DEFAULT_PORT;
     let mut render = "";
 
@@ -42,24 +42,34 @@ fn main() {
                         .unwrap();
                 }
             }
-            "-h" => {
+            "-l" => {
                 if let Some(h) = args.next() {
-                    host = &h;
+                    lhost = h;
                 } else {
                     return print_help();
                 }
             }
-            "--host" | "-host" => {
+            "--local-host" | "-local-host" => {
                 if let Some(h) = args.next() {
-                    host = &h;
+                    lhost = h;
+                }
+            }
+            "-R" => {
+                if let Some(h) = args.next() {
+                    rhost = h;
+                }
+            }
+            "--remote-host" | "-remote-host" => {
+                if let Some(h) = args.next() {
+                    rhost = h;
                 }
             }
             _ => {
-                if let Some('-') = arg.chars().nth(0) {
+                if let Some('-') = arg.chars().next() {
                     eprintln!("unknown flag: {}", arg);
                     process::exit(1);
                 } else {
-                    root = &arg;
+                    root = arg;
                 }
             }
         }
@@ -78,13 +88,13 @@ fn main() {
     };
 
     if !render.is_empty() {
-        return match phd::server::render(host, port, root, &render) {
+        return match phd::server::render(lhost, port, root, render) {
             Ok(out) => print!("{}", out),
             Err(e) => eprintln!("{}", e),
         };
     }
 
-    if let Err(e) = phd::server::start(bind, host, port, root) {
+    if let Err(e) = phd::server::start(bind, (lhost, rhost), port, root) {
         eprintln!("{}", e);
     }
 }

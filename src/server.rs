@@ -1,4 +1,5 @@
 //! A simple multi-threaded Gopher server.
+#![allow(clippy::format_push_string)]
 
 use crate::{color, gopher, Request, Result};
 use std::{
@@ -49,7 +50,7 @@ macro_rules! info {
 }
 
 /// Starts a Gopher server at the specified host, port, and root directory.
-pub fn start(bind: SocketAddr, host: &str, port: u16, root: &str) -> Result<()> {
+pub fn start(bind: SocketAddr, host: (&str,&str), port: u16, root: &str) -> Result<()> {
     let listener = TcpListener::bind(&bind)?;
     let full_root_path = fs::canonicalize(&root)?.to_string_lossy().to_string();
     let pool = ThreadPool::new(MAX_WORKERS);
@@ -74,7 +75,11 @@ pub fn start(bind: SocketAddr, host: &str, port: u16, root: &str) -> Result<()> 
             color::Magenta,
             stream.peer_addr()?
         );
-        let req = Request::from(host, port, root)?;
+        let req = if let std::net::IpAddr::V4(addr) = stream.peer_addr().unwrap().ip(){
+            Request::from(host.1,host.0, port, root,Some(addr))?
+        } else {
+            Request::from(host.1,host.0, port, root,None)?
+        };
         pool.execute(move || {
             if let Err(e) = accept(stream, req) {
                 info!("{}└ {}{}", color::Red, e, color::Reset);
@@ -106,8 +111,8 @@ fn accept(mut stream: TcpStream, mut req: Request) -> Result<()> {
 /// Render a response to a String.
 pub fn render(host: &str, port: u16, root: &str, selector: &str) -> Result<String> {
     hide_info();
-    let mut req = Request::from(host, port, root)?;
-    req.parse_request(&selector);
+    let mut req = Request::from(host,host, port, root, None)?;
+    req.parse_request(selector);
     let mut out = vec![];
     write_response(&mut out, req)?;
     Ok(String::from_utf8_lossy(&out).into())
@@ -185,7 +190,7 @@ where
     for entry in paths {
         let file_name = entry.file_name();
         let f = file_name.to_string_lossy().to_string();
-        if f.chars().nth(0) == Some('.') || IGNORED_FILES.contains(&f.as_ref()) {
+        if f.starts_with('.') || IGNORED_FILES.contains(&f.as_ref()) {
             continue;
         }
         let path = format!(
@@ -199,7 +204,7 @@ where
             file_type(&entry).to_char(),
             &file_name.to_string_lossy(),
             &path,
-            &req.host,
+            &req.get_host(),
             req.port,
         )?;
     }
@@ -259,7 +264,7 @@ where
 
     // Run the file and use its output as content if it's executable.
     let reader = if is_executable(&path) {
-        shell(&path, &[&req.query, &req.host, &req.port.to_string()])?
+        shell(&path, &[&req.query, &req.get_host(), &req.port.to_string()])?
     } else {
         fs::read_to_string(&path)?
     };
@@ -298,7 +303,7 @@ fn gph_line_to_gopher(line: &str, req: &Request) -> String {
             .replace("\\|", "__P_ESC_PIPE") // cheap hack
             .replace('|', "\t")
             .replace("__P_ESC_PIPE", "\\|")
-            .replace("\tserver\t", format!("\t{}\t", req.host).as_ref())
+            .replace("\tserver\t", format!("\t{}\t", req.get_host()).as_ref())
             .replace("\tport", format!("\t{}", port).as_ref());
         let tabs = line.matches('\t').count();
         if tabs < 1 {
@@ -309,7 +314,7 @@ fn gph_line_to_gopher(line: &str, req: &Request) -> String {
         // if it's just missing the port, assume port 70
         if tabs < 2 {
             line.push('\t');
-            line.push_str(&req.host);
+            line.push_str(&req.get_host());
             line.push('\t');
             line.push_str(&port);
         } else if tabs < 3 {
@@ -321,10 +326,10 @@ fn gph_line_to_gopher(line: &str, req: &Request) -> String {
             0 => {
                 // Always insert `i` prefix to any lines without tabs.
                 line.insert(0, 'i');
-                line.push_str(&format!("\t(null)\t{}\t{}", req.host, req.port))
+                line.push_str(&format!("\t(null)\t{}\t{}", req.get_host(), req.port))
             }
             // Auto-add host and port to lines with just a selector.
-            1 => line.push_str(&format!("\t{}\t{}", req.host, req.port)),
+            1 => line.push_str(&format!("\t{}\t{}", req.get_host(), req.port)),
             2 => line.push_str(&format!("\t{}", req.port)),
             _ => {}
         }
@@ -464,7 +469,7 @@ mod tests {
 
     #[test]
     fn test_gph_line_to_gopher() {
-        let req = Request::from("localhost", 70, ".").unwrap();
+        let req = Request::from("localhost","localhost", 70, ".",None).unwrap();
 
         assert_eq!(
             gph_line_to_gopher("regular line test", &req),
@@ -484,7 +489,7 @@ mod tests {
 
     #[test]
     fn test_gph_geomyidae() {
-        let req = Request::from("localhost", 7070, ".").unwrap();
+        let req = Request::from("localhost","localhost", 7070, ".",None).unwrap();
 
         assert_eq!(
             gph_line_to_gopher("[1|phkt.io|/|phkt.io]", &req),

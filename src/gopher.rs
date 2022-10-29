@@ -3,7 +3,7 @@ use std::fmt;
 
 /// Gopher types are defined according to RFC 1436.
 #[allow(missing_docs)]
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Type {
     Text,       // 0
     Menu,       // 1
@@ -54,8 +54,7 @@ impl Type {
 
     /// Is this something we can download?
     pub fn is_download(self) -> bool {
-        match self {
-            Type::Binhex
+        matches!(self, Type::Binhex
             | Type::DOSFile
             | Type::UUEncoded
             | Type::Binary
@@ -63,9 +62,7 @@ impl Type {
             | Type::Image
             | Type::PNG
             | Type::Sound
-            | Type::Document => true,
-            _ => false,
-        }
+            | Type::Document)
     }
 
     /// Gopher Item Type to RFC char.
