@@ -108,7 +108,8 @@ fn print_help() {
 Options:
 
     -r, --render SELECTOR  Render and print SELECTOR to stdout only.
-    -h, --host HOST        Hostname for links. [Default: {host}]
+    -R, --remote-host HOST Hostname for connections over WAN. [Default: {host}]
+    -l, --local-host HOST  Hostname for connections over LAN.
     -p, --port PORT        Port for links. [Default: {port}]
     -b, --bind ADDRESS     Socket address to bind to. [Default: {bind}]
     --no-color             Don't show colors in log messages.
