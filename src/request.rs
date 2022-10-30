@@ -62,7 +62,7 @@ impl Request {
         let fmt = format!("{} {}",host,mask).into_boxed_str();
         let masked = MaskedIpv4::from_network_str(&fmt).unwrap();
         Ok(Request {
-            hosts: (lcl.into(),host.into(),"127.0.0.1".into()),
+            hosts: (host.into(),lcl.into(),"127.0.0.1".into()),
             port,
             root: fs::canonicalize(root)?.to_string_lossy().into(),
             selector: String::new(),

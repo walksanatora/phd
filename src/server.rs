@@ -261,9 +261,9 @@ where
     W: Write,
 {
     let path = req.file_path();
-
+    
     // Run the file and use its output as content if it's executable.
-    let reader = if is_executable(&path) {
+    let reader = if is_executable(&path) && req.selector != "0" {
         shell(&path, &[&req.query, &req.get_host(), &req.port.to_string()])?
     } else {
         fs::read_to_string(&path)?
