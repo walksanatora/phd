@@ -26,7 +26,7 @@ pub struct Request {
     /// Masked ip to use for comparing
     pub masked: MaskedIpv4,
     /// The gopher type of the request
-    pub r#type: char
+    pub gph_char: char
 }
 
 #[cfg(target_os="linux")]
@@ -71,7 +71,7 @@ impl Request {
             query: String::new(),
             masked,
             rem: remote,
-            r#type: ' '
+            gph_char: ' '
         })
     }
 
@@ -93,6 +93,7 @@ impl Request {
     pub fn parse_request(&mut self, line: &str) {
         self.query.clear();
         self.selector.clear();
+        self.gph_char = line.chars().next().unwrap();
         if let Some((i, _)) = line
             .chars()
             .enumerate()
@@ -104,7 +105,6 @@ impl Request {
                 return;
             }
         }
-        self.r#type = line.chars().next().unwrap();
         self.selector.push_str(line);
 
         // strip trailing /

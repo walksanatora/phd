@@ -263,7 +263,7 @@ where
     let path = req.file_path();
     println!("req: {:?}", req);
     // Run the file and use its output as content if it's executable.
-    let reader = if is_executable(&path) && req.r#type != '0' {
+    let reader = if is_executable(&path) && req.gph_char != '0' {
         shell(&path, &[&req.query, &req.get_host(), &req.port.to_string()])?
     } else {
         fs::read_to_string(&path)?
