@@ -25,8 +25,6 @@ pub struct Request {
     pub rem: Option<Ipv4Addr>,
     /// Masked ip to use for comparing
     pub masked: MaskedIpv4,
-    /// The gopher type of the request
-    pub gph_char: char
 }
 
 #[cfg(target_os="linux")]
@@ -71,7 +69,6 @@ impl Request {
             query: String::new(),
             masked,
             rem: remote,
-            gph_char: ' '
         })
     }
 
@@ -91,7 +88,6 @@ impl Request {
 
     /// Set selector + query based on what the client sent.
     pub fn parse_request(&mut self, line: &str) {
-        println!("parsing request: {}",line);
         self.query.clear();
         self.selector.clear();
         if let Some((i, _)) = line

@@ -131,14 +131,14 @@ where
     if fs_exists(&gph_file) {
         req.selector = req.selector.trim_end_matches('/').into();
         req.selector.push_str(".gph");
-        return write_gophermap(w, req);
+        return write_gophermap(w, req,false);
     } else {
         // check for index.gph if we're looking for dir
         let mut index = path.clone();
         index.push_str("/index.gph");
         if fs_exists(&index) {
             req.selector.push_str("/index.gph");
-            return write_gophermap(w, req);
+            return write_gophermap(w, req,false);
         }
     }
 
@@ -148,7 +148,7 @@ where
     };
 
     if path.ends_with(".gph") {
-        write_gophermap(w, req)
+        write_gophermap(w, req, true)
     } else if meta.is_file() {
         write_file(w, req)
     } else if meta.is_dir() {
@@ -179,6 +179,7 @@ where
                 selector: sel,
                 ..req.clone()
             },
+            false
         )?;
     }
 
@@ -218,6 +219,7 @@ where
                 selector: sel,
                 ..req.clone()
             },
+            false
         )?;
     }
 
@@ -256,14 +258,14 @@ where
 }
 
 /// Send a gophermap (menu) to the client based on a Request.
-fn write_gophermap<W>(w: &mut W, req: Request) -> Result<()>
+fn write_gophermap<W>(w: &mut W, req: Request, source: bool) -> Result<()>
 where
     W: Write,
 {
     let path = req.file_path();
     println!("req: {:?}", req);
     // Run the file and use its output as content if it's executable.
-    let reader = if is_executable(&path) && req.gph_char != '0' {
+    let reader = if is_executable(&path) && !source  {
         shell(&path, &[&req.query, &req.get_host(), &req.port.to_string()])?
     } else {
         fs::read_to_string(&path)?
