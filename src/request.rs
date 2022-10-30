@@ -91,9 +91,9 @@ impl Request {
 
     /// Set selector + query based on what the client sent.
     pub fn parse_request(&mut self, line: &str) {
+        println!("parsing request: {}",line);
         self.query.clear();
         self.selector.clear();
-        self.gph_char = line.chars().next().unwrap();
         if let Some((i, _)) = line
             .chars()
             .enumerate()
