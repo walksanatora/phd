@@ -261,7 +261,7 @@ where
     W: Write,
 {
     let path = req.file_path();
-    println!("req: {:?}", req);
+    
     // Run the file and use its output as content if it's executable.
     let reader = if is_executable(&path) && !source  {
         shell(&path, &[&req.query, &req.get_host(), &req.port.to_string()])?
