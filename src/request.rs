@@ -24,7 +24,9 @@ pub struct Request {
     /// remote ipv4, used for comparison since gopher voids connections
     pub rem: Option<Ipv4Addr>,
     /// Masked ip to use for comparing
-    pub masked: MaskedIpv4
+    pub masked: MaskedIpv4,
+    /// The gopher type of the request
+    pub r#type: char
 }
 
 #[cfg(target_os="linux")]
@@ -68,7 +70,8 @@ impl Request {
             selector: String::new(),
             query: String::new(),
             masked,
-            rem: remote
+            rem: remote,
+            r#type: ' '
         })
     }
 
@@ -101,6 +104,7 @@ impl Request {
                 return;
             }
         }
+        self.r#type = line.chars().next().unwrap();
         self.selector.push_str(line);
 
         // strip trailing /
