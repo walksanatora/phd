@@ -147,9 +147,7 @@ where
         Err(_) => return write_not_found(w, req),
     };
 
-    if path.ends_with(".gph") {
-        write_gophermap(w, req, true)
-    } else if meta.is_file() {
+    if meta.is_file() {
         write_file(w, req)
     } else if meta.is_dir() {
         write_dir(w, req)
