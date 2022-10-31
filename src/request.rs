@@ -48,10 +48,13 @@ impl Request {
     pub fn get_host(&self) -> String {
         let rem = self.rem.unwrap_or_else( || "127.0.0.1".parse().unwrap());
         if self.masked.ip == rem {
+            println!("returning localhost");
             self.hosts.2.clone()
         } else if self.masked.contains(rem) {
+            println!("returning remote host");
             self.hosts.0.clone()
         } else {
+            println!("returning LAN host");
             self.hosts.1.clone()
         }
     }
