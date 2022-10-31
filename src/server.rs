@@ -75,9 +75,12 @@ pub fn start(bind: SocketAddr, host: (&str,&str), port: u16, root: &str) -> Resu
             color::Magenta,
             stream.peer_addr()?
         );
-        let req = if let std::net::IpAddr::V4(addr) = stream.peer_addr().unwrap().ip(){
+        let ip = stream.peer_addr().unwrap().ip();
+        let req = if let std::net::IpAddr::V4(addr) = ip {
+            println!("was able to get a ipv4 for peer: {:?}",addr);
             Request::from(host.1,host.0, port, root,Some(addr))?
         } else {
+            println!("was not able to get a ipv4 addr for peer\n here is the peer addr tho: {:?}",ip)
             Request::from(host.1,host.0, port, root,None)?
         };
         pool.execute(move || {
