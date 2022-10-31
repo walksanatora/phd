@@ -64,7 +64,7 @@ impl Request {
     /// Try to create a new request state object.
     pub fn from(host: &str,lcl: &str, port: u16, root: &str, remote: Option<Ipv4Addr>) -> Result<Request> {
         let mask = get_subnet();
-        let fmt = format!("{} {}",host,mask).into_boxed_str();
+        let fmt = format!("{} {}",lcl,mask).into_boxed_str();
         let masked = MaskedIpv4::from_network_str(&fmt).unwrap();
         println!("creating new host triplet WAN: {}\nLAN: {}",host,lcl);
         Ok(Request {
