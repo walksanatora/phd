@@ -78,15 +78,12 @@ pub fn start(bind: SocketAddr, host: (&str,&str), port: u16, root: &str) -> Resu
         let ip = stream.peer_addr().unwrap().ip();
         let req = match ip {
             std::net::IpAddr::V4(addr) => {
-            println!("was able to get a ipv4 for peer: {:?}",addr);
             Request::from(host.1,host.0, port, root,Some(addr))?
         }
         std::net::IpAddr::V6(addr) => {
             if let Some(v4) = addr.to_ipv4() {
-                println!("was able to extract v4 from v6: {:?}",v4);
                 Request::from(host.1,host.0, port, root,Some(v4))?
             } else {
-                println!("ip was v6, expect *many* issues");
                 Request::from(host.1,host.0, port, root,None)?
             }
         }

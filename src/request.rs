@@ -47,16 +47,11 @@ impl Request {
     /// Try to get the host (either local ip, LAN ip, or WAN ip)
     pub fn get_host(&self) -> String {
         let rem = self.rem.unwrap_or_else( || "127.0.0.1".parse().unwrap());
-        println!("resolving host for {:?}\n(real rem: {:?})",rem,self.rem);
-        println!("masked ip: {:?}",self.masked.ip);
         if self.masked.ip == rem {
-            println!("returning localhost");
             self.hosts.2.clone()
         } else if self.masked.contains(rem) {
-            println!("returning LAN host");
             self.hosts.1.clone()
         } else {
-            println!("returning WAN host");
             self.hosts.0.clone()
         }
     }
