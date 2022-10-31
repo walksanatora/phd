@@ -61,6 +61,7 @@ impl Request {
         let mask = get_subnet();
         let fmt = format!("{} {}",host,mask).into_boxed_str();
         let masked = MaskedIpv4::from_network_str(&fmt).unwrap();
+        println!("creating new host triplet WAN: {}\nLAN: {}",host,lcl);
         Ok(Request {
             hosts: (host.into(),lcl.into(),"127.0.0.1".into()),
             port,
