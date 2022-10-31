@@ -53,11 +53,11 @@ impl Request {
             println!("returning localhost");
             self.hosts.2.clone()
         } else if self.masked.contains(rem) {
-            println!("returning remote host");
-            self.hosts.0.clone()
-        } else {
             println!("returning LAN host");
             self.hosts.1.clone()
+        } else {
+            println!("returning WAN host");
+            self.hosts.0.clone()
         }
     }
 
